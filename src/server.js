@@ -62,11 +62,12 @@ app.post('/test/create-user', async (req, res) => {
 app.post('/test/create-task', async (req, res) => {
   try {
     const Task = require('./models/Task');
+    const { title, description, status, priority } = req.body;
     const testTask = new Task({
-      title: 'Mobile App Task',
-      description: 'Create UI components for the mobile app',
-      status: 'pending',
-      priority: 'high',
+      title: title || 'Untitled Task',
+      description: description || '',
+      status: status || 'pending',
+      priority: priority || 'medium',
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
       user: '67cfe9cd7e922003cfbcf612' // The actual user ID we just created
     });
@@ -90,6 +91,11 @@ app.get('/test/get-tasks', async (req, res) => {
     console.error('Error fetching tasks:', error);
     res.status(500).json({ status: 'error', message: error.message });
   }
+});
+
+// Health check endpoint for Render
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'OK', message: 'Server is healthy' });
 });
 
 // MongoDB Connection with error handling

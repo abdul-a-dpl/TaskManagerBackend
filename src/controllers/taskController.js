@@ -1,9 +1,9 @@
 const Task = require('../models/Task');
 
-// Get all tasks for a user
+// Get all tasks
 exports.getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const tasks = await Task.find().sort({ createdAt: -1 });
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -13,11 +13,14 @@ exports.getTasks = async (req, res) => {
 // Create a new task
 exports.createTask = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, status, priority, dueDate } = req.body;
     const task = new Task({
       title,
       description,
-      user: req.user._id
+      status: status || 'pending',
+      priority: priority || 'medium',
+      dueDate: dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      user: '67cfe9cd7e922003cfbcf612' // Using a default user ID
     });
     await task.save();
     res.status(201).json(task);
@@ -30,8 +33,8 @@ exports.createTask = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const task = await Task.findOneAndUpdate(
-      { _id: id, user: req.user._id },
+    const task = await Task.findByIdAndUpdate(
+      id,
       { ...req.body },
       { new: true }
     );
@@ -48,7 +51,7 @@ exports.updateTask = async (req, res) => {
 exports.deleteTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const task = await Task.findOneAndDelete({ _id: id, user: req.user._id });
+    const task = await Task.findByIdAndDelete(id);
     if (!task) {
       return res.status(404).json({ message: 'Task not found' });
     }
